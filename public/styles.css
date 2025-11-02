@@ -37,6 +37,95 @@ body {
   gap: 1rem;
 }
 
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(249, 250, 251, 0.75);
+}
+
+.toggle__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle__track {
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.toggle__thumb {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: #1f2937;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.toggle__input:checked + .toggle__track {
+  background: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+}
+
+.toggle__input:checked + .toggle__track .toggle__thumb {
+  transform: translateX(1.2rem);
+}
+
+.toggle__label {
+  letter-spacing: 0.01em;
+}
+
+.mode-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mode-indicator::before {
+  content: "";
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.mode-indicator--calm {
+  color: #4ade80;
+}
+
+.mode-indicator--chaos {
+  color: #f97316;
+}
+
 .button {
   padding: 0.6rem 1.1rem;
   border-radius: 999px;
@@ -107,8 +196,33 @@ body {
 }
 
 .message__meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.8125rem;
   color: rgba(249, 250, 251, 0.7);
+}
+
+.message__command {
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(249, 250, 251, 0.82);
+}
+
+.message__command--pixy {
+  background: rgba(59, 130, 246, 0.25);
+  color: #bfdbfe;
+}
+
+.message__command--pupptier {
+  background: rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
 }
 
 .message__text {

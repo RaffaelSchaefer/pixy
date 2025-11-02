@@ -15,6 +15,7 @@ export interface AudioBroadcastPayload {
     id: string;
     name: string;
   };
+  command: string;
   timestamp: string;
 }
 

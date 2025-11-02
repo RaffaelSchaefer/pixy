@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 
 import { startDiscordBot } from "@/libs/discord";
+import { getModeState, setUnhingedMode } from "@/state/mode";
 import { createAudioGateway } from "@/utils/realtime/audioGateway";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import cors from "cors";
@@ -24,6 +25,23 @@ app.use(
   }),
 );
 app.use(express.static("public"));
+
+app.get("/api/mode", (_req, res) => {
+  res.json(getModeState());
+});
+
+app.post("/api/mode", (req, res) => {
+  const { unhinged } = req.body ?? {};
+
+  if (typeof unhinged !== "boolean") {
+    res.status(400).json({ error: "Invalid mode value. Expected boolean 'unhinged'." });
+    return;
+  }
+
+  setUnhingedMode(unhinged);
+
+  res.json(getModeState());
+});
 
 const server = createServer(app);
 const audioGateway = createAudioGateway(server);

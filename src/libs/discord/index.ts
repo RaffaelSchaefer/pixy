@@ -1,5 +1,6 @@
-import type { AudioGateway } from "@/utils/realtime/audioGateway";
 import { generateChatResponse } from "@/services/chat";
+import type { AudioGateway } from "@/utils/realtime/audioGateway";
+import { textToSpeech } from "@/utils/tts";
 import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from "discord.js";
 
 type BroadcastInput = Parameters<AudioGateway["broadcast"]>[0];
@@ -36,6 +37,13 @@ export async function startDiscordBot(options: StartDiscordBotOptions = {}) {
           .setRequired(true),
       )
       .setDMPermission(false),
+    new SlashCommandBuilder()
+      .setName("pupptier")
+      .setDescription("Have Pixy repeat exactly what you say.")
+      .addStringOption(option =>
+        option.setName("message").setDescription("What should Pixy repeat?").setRequired(true),
+      )
+      .setDMPermission(false),
   ].map(command => command.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(token);
@@ -61,39 +69,78 @@ export async function startDiscordBot(options: StartDiscordBotOptions = {}) {
       return;
     }
 
-    if (interaction.commandName !== "pixy") {
+    if (interaction.commandName === "pixy") {
+      const message = interaction.options.getString("message", true);
+
+      try {
+        await interaction.deferReply();
+
+        const chatResponse = await generateChatResponse(message);
+
+        await interaction.editReply(chatResponse.text);
+
+        options.broadcast?.({
+          text: chatResponse.text,
+          audio: chatResponse.audio,
+          source: "discord",
+          command: "pixy",
+          author: {
+            id: interaction.user.id,
+            name: interaction.user.tag,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to process Discord command.", error);
+        if (interaction.deferred || interaction.replied) {
+          await interaction.editReply(
+            "Sorry, I couldn't process that request. Please try again later.",
+          );
+        } else {
+          await interaction.reply({
+            content: "Sorry, I couldn't process that request. Please try again later.",
+            ephemeral: true,
+          });
+        }
+      }
       return;
     }
 
-    const message = interaction.options.getString("message", true);
+    if (interaction.commandName === "pupptier") {
+      const message = interaction.options.getString("message", true);
 
-    try {
-      await interaction.deferReply();
+      try {
+        await interaction.deferReply();
 
-      const chatResponse = await generateChatResponse(message);
+        const speech = await textToSpeech(message);
 
-      await interaction.editReply(chatResponse.text);
+        await interaction.editReply(message);
 
-      options.broadcast?.({
-        text: chatResponse.text,
-        audio: chatResponse.audio,
-        source: "discord",
-        author: {
-          id: interaction.user.id,
-          name: interaction.user.tag,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to process Discord command.", error);
-      if (interaction.deferred || interaction.replied) {
-        await interaction.editReply(
-          "Sorry, I couldn't process that request. Please try again later.",
-        );
-      } else {
-        await interaction.reply({
-          content: "Sorry, I couldn't process that request. Please try again later.",
-          ephemeral: true,
+        options.broadcast?.({
+          text: message,
+          audio: {
+            base64: speech.audio.base64,
+            mediaType: speech.audio.mediaType,
+            format: speech.audio.format,
+          },
+          source: "discord",
+          command: "pupptier",
+          author: {
+            id: interaction.user.id,
+            name: interaction.user.tag,
+          },
         });
+      } catch (error) {
+        console.error("Failed to process puppetier command.", error);
+        if (interaction.deferred || interaction.replied) {
+          await interaction.editReply(
+            "Sorry, I couldn't process that request. Please try again later.",
+          );
+        } else {
+          await interaction.reply({
+            content: "Sorry, I couldn't process that request. Please try again later.",
+            ephemeral: true,
+          });
+        }
       }
     }
   });

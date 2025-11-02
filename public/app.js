@@ -1,12 +1,16 @@
 const statusEl = document.querySelector("#status");
 const messagesEl = document.querySelector("#messages");
 const enableSoundButton = document.querySelector("#enable-sound");
+const unhingedToggle = document.querySelector("#unhinged-toggle");
+const modeStatusEl = document.querySelector("#mode-status");
 
 let socket;
 let reconnectTimer;
 let autoplayEnabled = false;
 const playbackQueue = [];
 let isPlaying = false;
+let unhingedMode = false;
+let modeUpdateInFlight = false;
 
 const MAX_MESSAGES = 25;
 
@@ -41,6 +45,18 @@ function formatTimestamp(isoString) {
   return date.toLocaleString();
 }
 
+function updateModeIndicator(active) {
+  if (modeStatusEl) {
+    modeStatusEl.textContent = active ? "Pixy ist entgleist." : "Pixy ist brav.";
+    modeStatusEl.classList.toggle("mode-indicator--chaos", active);
+    modeStatusEl.classList.toggle("mode-indicator--calm", !active);
+  }
+
+  if (unhingedToggle && unhingedToggle.checked !== active) {
+    unhingedToggle.checked = active;
+  }
+}
+
 function appendMessage(payload, audioUrl) {
   const authorName = payload.author?.name ?? "Pixy";
   const messageEl = document.createElement("article");
@@ -48,7 +64,23 @@ function appendMessage(payload, audioUrl) {
 
   const metaEl = document.createElement("div");
   metaEl.className = "message__meta";
-  metaEl.textContent = `${authorName} • ${formatTimestamp(payload.timestamp)}`;
+  const metaTextEl = document.createElement("span");
+  metaTextEl.className = "message__meta-text";
+  metaTextEl.textContent = `${authorName} • ${formatTimestamp(payload.timestamp)}`;
+  metaEl.append(metaTextEl);
+
+  if (typeof payload.command === "string" && payload.command.trim() !== "") {
+    const commandEl = document.createElement("span");
+    const normalizedCommand = payload.command.toLowerCase();
+    commandEl.className = `message__command message__command--${normalizedCommand}`;
+    commandEl.textContent =
+      normalizedCommand === "pixy"
+        ? "Pixy"
+        : normalizedCommand === "pupptier"
+          ? "Puppetier"
+          : payload.command;
+    metaEl.append(commandEl);
+  }
   messageEl.append(metaEl);
 
   const textEl = document.createElement("div");
@@ -189,3 +221,81 @@ function scheduleReconnect() {
 }
 
 connectWebSocket();
+
+initializeModeToggle().catch(error => {
+  console.error("Failed to initialize mode toggle.", error);
+});
+
+async function initializeModeToggle() {
+  if (!unhingedToggle) {
+    return;
+  }
+
+  try {
+    modeUpdateInFlight = true;
+    unhingedToggle.disabled = true;
+    unhingedMode = await fetchModeState();
+    updateModeIndicator(unhingedMode);
+  } catch (error) {
+    console.error("Failed to fetch mode state.", error);
+    updateModeIndicator(unhingedMode);
+  } finally {
+    modeUpdateInFlight = false;
+    if (unhingedToggle) {
+      unhingedToggle.disabled = false;
+    }
+  }
+
+  unhingedToggle.addEventListener("change", async event => {
+    const target = event.currentTarget;
+
+    if (!(target instanceof HTMLInputElement) || modeUpdateInFlight) {
+      return;
+    }
+
+    const desiredState = target.checked;
+    modeUpdateInFlight = true;
+    target.disabled = true;
+
+    try {
+      const persistedState = await persistModeState(desiredState);
+      unhingedMode = persistedState;
+      updateModeIndicator(unhingedMode);
+    } catch (error) {
+      console.error("Failed to update mode state.", error);
+      target.checked = unhingedMode;
+      updateModeIndicator(unhingedMode);
+    } finally {
+      modeUpdateInFlight = false;
+      target.disabled = false;
+    }
+  });
+}
+
+async function fetchModeState() {
+  const response = await fetch("/api/mode");
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch mode state: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return Boolean(data?.unhinged);
+}
+
+async function persistModeState(enabled) {
+  const response = await fetch("/api/mode", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ unhinged: enabled }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to persist mode state: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return Boolean(data?.unhinged);
+}

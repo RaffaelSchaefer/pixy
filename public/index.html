@@ -11,7 +11,19 @@
       <section class="header">
         <div class="header__top">
           <h1>Pixy Audio Stream</h1>
-          <button id="enable-sound" class="button" type="button">Enable Auto-Play</button>
+          <div class="header__actions">
+            <label class="toggle" for="unhinged-toggle">
+              <input id="unhinged-toggle" class="toggle__input" type="checkbox" />
+              <span class="toggle__track" aria-hidden="true">
+                <span class="toggle__thumb"></span>
+              </span>
+              <span class="toggle__label">Unhinged Mode</span>
+            </label>
+            <button id="enable-sound" class="button" type="button">Enable Auto-Play</button>
+          </div>
+        </div>
+        <div id="mode-status" class="mode-indicator mode-indicator--calm" role="status">
+          Pixy ist brav.
         </div>
         <div id="status" class="status status--disconnected">Disconnected</div>
       </section>
