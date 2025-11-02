@@ -1,0 +1,8 @@
+# Ignore artifacts:
+./dist/**/*
+./coverage/**/*
+./static/**/*
+./build/**/*
+./db/**/*
+./node_modules/**/*
+**/.cache/**/*
