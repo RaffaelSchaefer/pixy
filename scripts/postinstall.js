@@ -11,14 +11,15 @@ WEBSERVER_PORT=3000
 
 #DISCORD BOT
 DISCORD_TOKEN=your-discord-bot-token
-DISCORD_CLIENT_ID=your-discord-client-id
+DISCORD_CLIENT_ID=your-discord-application-client-id
 DISCORD_GUILD_ID=your-discord-guild-id
 
 #OPENROUTER API
 OPENROUTER_API_KEY=your-openrouter-api-key
 
-#ELVENLABS API
-ELVENLABS_API_KEY=your-elvenlabs-api-key
+#ELEVENLABS API
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+VOICE_ID=your-voice-id
 `;
 
 try {

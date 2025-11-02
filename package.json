@@ -17,6 +17,7 @@
   "dependencies": {
     "@ai-sdk/elevenlabs": "^1.0.17",
     "@openrouter/ai-sdk-provider": "^1.2.0",
+    "@trpc/server": "^11.7.1",
     "ai": "^5.0.86",
     "cors": "^2.8.5",
     "discord.js": "^14.24.2",

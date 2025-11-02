@@ -1,7 +1,8 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#45260F",
-        "titleBar.activeBackground": "#613516",
-        "titleBar.activeForeground": "#FDF9F6"
-    }
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#45260F",
+    "titleBar.activeBackground": "#613516",
+    "titleBar.activeForeground": "#FDF9F6"
+  },
+  "cSpell.words": ["elevenlabs", "openrouter"]
 }
